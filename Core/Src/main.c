@@ -75,7 +75,7 @@ static void MX_TIM4_Init(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
-float regulator(float in, int i, float roznica) {
+float regulator(float e_new, int i, float roznica) {
 
 	//Oblcizany czas próbkowania
 	unsigned long now = HAL_GetTick();
@@ -84,20 +84,18 @@ float regulator(float in, int i, float roznica) {
 	// Parametry regulatora
 	static const float kp = 19.7517;
 	static const float ki = 0.078;
-
-	// POPRZEDNIA PRÓBKA (do wyznaczania całki oraz różniczki)
-	static float in_before = 0.0;
+	static float e = 0.0;
 
 	//Wyznaczenie parametrów regulatora
-	P = in*kp;
+	P = e_new*kp;
 	//Dodane wzmocnienie dla pętli anty-windup
 	if (i == 1)
-			{I = (I + (ki * (((in + in_before) * timeChange/1000) / 2))) + wzmI*roznica;}
+			{I = (I + (ki * (((e_new + e) * timeChange/1000) / 2))) + wzmI*roznica;}
 	else
-		I = (I + (ki * (((in + in_before) * timeChange/1000) / 2)));
+		I = (I + (ki * (((e_new + e) * timeChange/1000) / 2)));
 
 	// Obliczenie sygnału sterującego PWM oraz podanie czasu pobrania kolejnej próbki
-	in_before = in;
+	e = e_new;
 	Y = P + I;
 
 	lastTime = now;
